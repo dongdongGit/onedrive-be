@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Authentication Defaults
@@ -14,7 +13,7 @@ return [
     */
 
     'defaults' => [
-        'guard' => 'web',
+        'guard'     => env('AUTH_GUARD', 'portal'),
         'passwords' => 'users',
     ],
 
@@ -37,14 +36,24 @@ return [
 
     'guards' => [
         'web' => [
-            'driver' => 'session',
+            'driver'   => 'session',
             'provider' => 'users',
         ],
 
         'api' => [
-            'driver' => 'token',
+            'driver'   => 'token',
             'provider' => 'users',
-            'hash' => false,
+            'hash'     => false,
+        ],
+
+        'portal' => [
+            'driver'   => 'paseto',
+            'provider' => 'users', // TODO:
+        ],
+
+        'admin' => [
+            'driver'   => 'paseto',
+            'provider' => 'users',
         ],
     ],
 
@@ -68,7 +77,7 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => App\User::class,
+            'model'  => App\Modeuls\User::class,
         ],
 
         // 'users' => [
@@ -95,8 +104,8 @@ return [
     'passwords' => [
         'users' => [
             'provider' => 'users',
-            'table' => 'password_resets',
-            'expire' => 60,
+            'table'    => 'password_resets',
+            'expire'   => 60,
             'throttle' => 60,
         ],
     ],
@@ -113,5 +122,4 @@ return [
     */
 
     'password_timeout' => 10800,
-
 ];
