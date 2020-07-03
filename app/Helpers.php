@@ -92,13 +92,7 @@ if (!function_exists('markdown2Html')) {
         // TODO:
         $parser = new \Parsedown();
 
-        if (!$line) {
-            $html = $parser->text($markdown);
-        } else {
-            $html = $parser->line($markdown);
-        }
-
-        return $html;
+        return $line ? $parser->line($markdown) : $parser->text($markdown);
     }
 }
 
