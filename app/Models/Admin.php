@@ -2,16 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Auth\Authenticatable;
+use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 
-class Admin extends Authenticatable
+class Admin extends model implements AuthenticatableContract, AuthorizableContract
 {
-    use Notifiable;
+    use Notifiable, Authenticatable, Authorizable;
 
     protected $casts = [
         'is_binded' => 'boolean',
-        'is_tfa'    => 'boolean'
+        'is_tfa'    => 'boolean',
+        'locked'    => 'boolean'
     ];
 
     protected $columns = [
@@ -41,6 +45,7 @@ class Admin extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'tfa_secret'
     ];
 
     public function setPasswordAttribute($value)

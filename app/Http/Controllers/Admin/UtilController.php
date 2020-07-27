@@ -140,4 +140,11 @@ class UtilController extends Controller
     {
         return view()->exists('ng') ? view('ng') : abort(404, '请先编译Aria2c');
     }
+
+    public function checkHealth()
+    {
+        return $this->success([
+            'instance' => config('app.name')
+        ]);
+    }
 }

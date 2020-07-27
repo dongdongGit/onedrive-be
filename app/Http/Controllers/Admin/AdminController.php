@@ -17,9 +17,7 @@ class AdminController extends Controller
 {
     public function showBasic()
     {
-        $admin = auth('admin')->user();
-
-        return view(config('olaindex.theme') . 'admin.basic', compact('admin'));
+        return $this->success(auth('admin')->user());
     }
 
     /**

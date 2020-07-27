@@ -10,6 +10,8 @@ use App\Observers\AdminObserver;
 use App\Observers\ImageObserver;
 use App\Observers\OneDriveObserver;
 use App\Observers\TaskObserver;
+use Carbon\Carbon;
+use Carbon\CarbonInterval;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -21,7 +23,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        Carbon::setLocale('zh');
+        CarbonInterval::setLocale('zh');
     }
 
     /**
@@ -31,6 +34,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        Carbon::serializeUsing(function ($carbon) {
+            return $carbon->format('Y-m-d H:i:s');
+        });
         Task::observe(TaskObserver::class);
         Admin::observe(AdminObserver::class);
         Image::observe(ImageObserver::class);

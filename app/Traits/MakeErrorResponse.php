@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use Flugg\Responder\Contracts\Responder;
 use Flugg\Responder\Http\Responses\ErrorResponseBuilder;
 
 trait MakeErrorResponse

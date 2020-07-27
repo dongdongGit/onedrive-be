@@ -15,11 +15,10 @@ class AdminObserver
         $dirty_data = $admin->getDirty();
         $original_data = $admin->getOriginal();
 
-        if (
-            !empty($original_tfa_secret = Arr::get($original_data, 'tfa_secret'))
-                && Arr::get($dirty_data, 'tfa_secret') != $original_tfa_secret
+        if (!empty($original_tfa_secret = Arr::get($original_data, 'tfa_secret'))
+            && Arr::get($dirty_data, 'tfa_secret') != $original_tfa_secret
         ) {
-            cookie()->queue(cookie()->forget(config('google2fa.remember_cookie_field')));
+            // cookie()->queue(cookie()->forget(config('google2fa.remember_cookie_field')));
         }
     }
 }
