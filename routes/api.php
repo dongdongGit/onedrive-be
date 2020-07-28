@@ -24,6 +24,9 @@ Route::group((['prefix' => 'admin', 'namespace' => 'Admin']), function () {
     Route::post('login', 'AuthController@login')->name('admin.login.post');
 
     Route::group(['middleware' => ['auth:admin']], function () {
-        //
+        Route::apiResource('setting', 'SettingController', ['as' => 'admin'])->only(['index', 'store']);
+        Route::group(['prefix' => 'session'], function () {
+            Route::post('/', 'SessionController@profile')->name('admin.session.profile');
+        });
     });
 });

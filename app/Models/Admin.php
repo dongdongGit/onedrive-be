@@ -22,11 +22,6 @@ class Admin extends model implements AuthenticatableContract, AuthorizableContra
         'id',
         'name',
         'email',
-        'site_name',
-        'theme',
-        'hotlink_protection',
-        'copyright',
-        'statistics',
         'tfa_secret',
         'is_binded',
         'is_tfa',
@@ -61,5 +56,10 @@ class Admin extends model implements AuthenticatableContract, AuthorizableContra
     public function images()
     {
         return $this->hasMany(Image::class);
+    }
+
+    public function setting()
+    {
+        return $this->hasOne(Setting::class, 'admin_id', 'id');
     }
 }

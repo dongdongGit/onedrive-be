@@ -17,7 +17,8 @@
         "laravel/tinker": "^2.0",
         "paragonie/paseto": "^1.0",
         "php-curl-class/php-curl-class": "^8.8",
-        "sentry/sentry-laravel": "1.8.0"
+        "sentry/sentry-laravel": "1.8.0",
+        "spatie/laravel-activitylog": "^3.14"
     },
     "require-dev": {
         "facade/ignition": "^2.0",

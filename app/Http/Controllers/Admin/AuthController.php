@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\LoginRequest;
+use App\Http\Requests\Admin\Auth\LoginRequest;
 use App\Http\Transformers\AuthTransformer;
 use App\Models\Admin;
 use Illuminate\Support\Arr;
@@ -24,15 +24,15 @@ class AuthController extends Controller
         }
 
         try {
-            $cache_key = 'admin_username_login:' . $data['email'];
+            $cache_key = 'admin_username_login:' . $data['username'];
             $trial = Cache::get($cache_key, 0);
 
-            if (!$token = Auth::attempt(Arr::only($data, ['email', 'password']))) {
+            if (!$token = Auth::attempt(Arr::only($data, ['username', 'password']))) {
                 Cache::put($cache_key, ++$trial, now()->addHours(4));
                 Cache::put($ip_trial_key, ++$ip_trial, now()->addMinutes(15));
 
                 if ($trial >= 5) {
-                    $admin = Admin::where('email', $data['email'])->firstOrFail();
+                    $admin = Admin::where('username', $data['username'])->firstOrFail();
                     $admin->update([
                         'locked' => 1
                     ]);

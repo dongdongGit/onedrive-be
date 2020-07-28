@@ -17,7 +17,7 @@ class AdminController extends Controller
 {
     public function showBasic()
     {
-        return $this->success(auth('admin')->user());
+        return $this->success(auth('admin')->user()->setting);
     }
 
     /**
