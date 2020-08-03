@@ -20,5 +20,8 @@ return [
     'code_exception'                 => '系统异常',
     'mobile_user_not_exists'         => '您的手机号未存在于任何场地,请联系工作人员处理',
     'bind_onedrive_exists'           => ':name 已经绑定过了',
-    'bind_onedrive_not_found'        => ':name 请先绑定'
+    'bind_onedrive_not_found'        => ':name 请先绑定',
+    'get_file_error'                 => '无法获取文件内容',
+    'upload_file_error'              => '文件上传错误',
+    'upload_file_empty'              => '上传文件为空'
 ];

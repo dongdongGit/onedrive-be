@@ -6,7 +6,6 @@ use App\Services\OneDrive\Tool;
 use App\Services\OneDrive\OneDrive;
 use Illuminate\Http\Request;
 use Illuminate\Contracts\Encryption\DecryptException;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
@@ -27,16 +26,10 @@ class ManageController extends Controller
      */
     public function uploadImage(Request $request)
     {
-        if (!$request->isMethod('post')) {
-            return view(config('olaindex.theme') . 'image');
-        }
-
         $field = 'olaindex_img';
 
         if (!$request->hasFile($field)) {
-            $data = ['errno' => 400, 'message' => '上传文件为空'];
-
-            return response()->json($data, $data['errno']);
+            return $this->error('upload_file_empty')->respond(422);
         }
 
         $file = $request->file($field);
@@ -48,14 +41,14 @@ class ManageController extends Controller
         }
 
         if (!$file->isValid()) {
-            return response('文件上传出错', 400);
+            return $this->error('upload_file_error')->respond(422);
         }
 
         $path = $file->getRealPath();
 
         if (file_exists($path) && is_readable($path)) {
             $content = file_get_contents($path);
-            $hostingPath = Tool::getEncodeUrl(Tool::config('image_hosting_path'));
+            $hostingPath = Tool::getEncodeUrl(Tool::config('image_hosting_path')); // TODO:
             $middleName = '/' . date('Y') . '/' . date('m') . '/'
                 . date('d') . '/' . Str::random(8) . '/';
             $filePath = trim($hostingPath . $middleName
@@ -81,12 +74,12 @@ class ManageController extends Controller
                 @unlink($path);
 
                 return response()->json($data, $data['errno']);
-            } else {
-                return $response;
             }
-        } else {
-            return response('无法获取文件内容', 400);
+
+            return $this->success($response);
         }
+
+        return $this->error('get_file_error')->respond(422);
     }
 
     public function showFile()
@@ -166,11 +159,8 @@ class ManageController extends Controller
      */
     public function createFile(Request $request)
     {
-        if (!$request->isMethod('post')) {
-            return themeView('admin.onedrive.add');
-        }
-
         $name = $request->get('name');
+
         try {
             $path = decrypt($request->get('path'));
         } catch (DecryptException $e) {
@@ -185,7 +175,9 @@ class ManageController extends Controller
         $response['errno'] === 0 ? Tool::showMessage('添加成功！') : Tool::showMessage('添加失败！', false);
         Cache::forget('one' . app('onedrive')->id . ':list:' . Tool::getAbsolutePath($path));
 
-        return redirect()->route('home', Tool::getEncodeUrl($path));
+        return $this->success();
+
+        // return redirect()->route('home', Tool::getEncodeUrl($path));
     }
 
     /**
@@ -213,7 +205,9 @@ class ManageController extends Controller
         $response = OneDrive::upload($id, $content);
         $response['errno'] === 0 ? Tool::showMessage('修改成功！') : Tool::showMessage('修改失败！', false);
         clearOnedriveCache(app('onedrive')->id);
-        return redirect()->back();
+
+        return $this->success();
+        // return redirect()->back();
     }
 
     /**
@@ -238,7 +232,7 @@ class ManageController extends Controller
             : Tool::showMessage('新建目录失败！', false);
         Cache::forget('one' . app('onedrive')->id . ':list:' . Tool::getAbsolutePath($path));
 
-        return redirect()->back();
+        return $this->success();
     }
 
     /**
@@ -285,9 +279,10 @@ class ManageController extends Controller
         $response = OneDrive::copy($itemId, $parentItemId);
         if ($response['errno'] === 0) {
             return $this->success($response['data']);
-        } else {
-            return $response;
-        } // 返回复制进度链接
+        }
+        // 返回复制进度链接
+
+        return $this->success($response);
     }
 
     /**
@@ -304,9 +299,9 @@ class ManageController extends Controller
 
         if ($response['errno'] === 0) {
             return $this->success($response['data']);
-        } else {
-            return $response;
         }
+
+        return $this->success($response);
     }
 
     /**
@@ -323,9 +318,9 @@ class ManageController extends Controller
 
         if ($response['errno'] === 0) {
             return $this->success($response['data']);
-        } else {
-            return $response;
         }
+
+        return $this->success($response);
     }
 
     /**
@@ -341,9 +336,9 @@ class ManageController extends Controller
 
         if ($response['errno'] === 0) {
             return $this->success($response['data']);
-        } else {
-            return $response;
         }
+
+        return $this->success($response);
     }
 
     /**
@@ -358,16 +353,10 @@ class ManageController extends Controller
         $response = OneDrive::deleteShareLink($itemId);
 
         if ($response['errno'] === 0) {
-            return response()->json(
-                [
-                    'code' => 200,
-                    'data' => $response['data'],
-                    'msg'  => 'OK',
-                ]
-            );
-        } else {
-            return $response;
+            return $this->success($response['data']);
         }
+
+        return $this->success($response);
     }
 
     /**
@@ -384,8 +373,8 @@ class ManageController extends Controller
 
         if ($response['errno'] === 0) {
             return $this->success($response['data']);
-        } else {
-            return $response;
         }
+
+        return $this->success($response);
     }
 }
