@@ -26,6 +26,7 @@ class SettingController extends Controller
         $setting = Setting::firstOrNew([
             'admin_id' => auth('admin')->user()->id
         ], $data);
+
         foreach ($data as $field => $value) {
             if (!in_array($field, $setting->getColumns())) {
                 continue;

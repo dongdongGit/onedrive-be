@@ -32,7 +32,7 @@ class AuthTransformer extends Transformer
     {
         return [
             'token'      => Auth::login($admin),
-            'account'    => transformation($admin, AdminTransformer::class)->transform(),
+            'admin'      => transformation($admin, AdminTransformer::class)->transform(),
             'expires_in' => config('paseto.expires') * 3600
         ];
     }

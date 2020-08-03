@@ -6,6 +6,10 @@ use App\Models\Image;
 use Illuminate\Http\Request;
 use App\Services\ImageService;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\Unit\BindGoogleTFARequest;
+use App\Http\Requests\Admin\Unit\DestroyImageRequest;
+use App\Http\Requests\Admin\Unit\StoreImageRequest;
+use App\Http\Requests\Admin\Unit\UnbindGoogleTFARequest;
 use App\Models\OneDrive;
 
 class UtilController extends Controller
@@ -13,16 +17,14 @@ class UtilController extends Controller
     /**
      * 多图传图
      */
-    public function storeImage(Request $request)
+    public function storeImage(StoreImageRequest $request)
     {
-        $data = $request->validate([
-            'image' => 'required|image'
-        ]);
+        $data = $request->validated();
 
         $file = request()->file('image');
 
         if (empty($file) || !$file->isValid()) {
-            return $this->error(40401);
+            return $this->error('file_not_exists')->respond(422);
         }
 
         $image = (new ImageService($file->path()))->save();
@@ -36,13 +38,9 @@ class UtilController extends Controller
     /**
      * 多图删图
      */
-    public function destroyImage(Request $request)
+    public function destroyImage(DestroyImageRequest $request)
     {
-        $data = $request->validate([
-            'image_ids'   => 'required|array',
-            'image_ids.*' => 'integer'
-        ]);
-
+        $data = $request->validated();
         $ids = array_unique($data['image_ids']);
 
         if (!empty($ids)) {
@@ -65,16 +63,20 @@ class UtilController extends Controller
 
     public function generateGoogle2fa()
     {
-        $google2fa = app('pragmarx.google2fa');
-        $secret = $google2fa->generateSecretKey();
+        $secret = app('pragmarx.google2fa')->generateSecretKey();
         $admin = auth('admin')->user();
-        $qrcode = $google2fa->getQRCodeInline(
+        $qrcode = app('pragmarx.google2fa')->getQRCodeInline(
             $admin->name,
             $admin->email,
             $secret
         );
 
-        return view('default.admin.google2fa', compact('qrcode', 'secret'));
+        return $this->success([
+            'qrcode' => $qrcode,
+            'secret' => $secret
+        ]);
+
+        // return view('default.admin.google2fa', compact('qrcode', 'secret'));
     }
 
     public function authGoogle2fa(Request $request)
@@ -86,54 +88,50 @@ class UtilController extends Controller
             $redirect = $redirect->cookie($cookie_remember);
         }
 
+        return $this->success();
         return $redirect;
     }
 
-    public function bindGoogle2fa(Request $request)
+    public function bindGoogle2fa(BindGoogleTFARequest $request)
     {
-        $data = $request->validate([
-            'tfa_secret' => 'required|string|size:16',
-            'code'       => 'required|string|size:6'
-        ]);
+        $data = $request->validated();
 
         $admin = auth('admin')->user();
 
         if ($admin->is_tfa) {
-            return redirect()->route('admin.basic')->withErrors(["{$admin->name} 已经绑定二步验证"]);
+            return $this->error('bind_tfa_over')->respond(422);
         }
 
-        if (app('pragmarx.google2fa')->verifyKey($data['tfa_secret'], $data['code'])) {
-            $admin->is_tfa = true;
-            $admin->tfa_secret = $data['tfa_secret'];
-            $admin->save();
-        } else {
-            return redirect()->back()->withErrors(["{$admin->name} 二步验证错误"]);
+        if (!app('pragmarx.google2fa')->verifyKey($data['tfa_secret'], $data['code'])) {
+            return $this->error('tfa_valid')->respond(422);
         }
 
-        return redirectSuccess('admin.basic');
+        $admin->is_tfa = true;
+        $admin->tfa_secret = $data['tfa_secret'];
+        $admin->save();
+
+        return $this->success();
     }
 
-    public function unbindGoogle2fa(Request $request)
+    public function unbindGoogle2fa(UnbindGoogleTFARequest $request)
     {
-        $data = $request->validate([
-            'code' => 'required|size:6'
-        ]);
+        $data = $request->validated();
 
         $admin = auth('admin')->user();
 
         if (!$admin->is_tfa) {
-            return redirect()->route('admin.basic')->withErrors(["{$admin->name} 请先绑定二步验证"]);
+            return $this->error('bind_tfa')->respond(422);
         }
 
-        if (app('pragmarx.google2fa')->verifyKey($admin->tfa_secret, $data['code'])) {
-            $admin->is_tfa = false;
-            $admin->tfa_secret = null;
-            $admin->save();
-        } else {
-            return redirect()->back()->withErrors(["{$admin->name} 二步验证错误"]);
+        if (!app('pragmarx.google2fa')->verifyKey($admin->tfa_secret, $data['code'])) {
+            return $this->error('tfa_valid')->respond(422);
         }
 
-        return redirectSuccess('admin.basic');
+        $admin->is_tfa = false;
+        $admin->tfa_secret = null;
+        $admin->save();
+
+        return $this->success();
     }
 
     public function aria2c()
