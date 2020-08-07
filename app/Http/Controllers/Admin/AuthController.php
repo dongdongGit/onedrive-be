@@ -20,7 +20,7 @@ class AuthController extends Controller
         $ip_trial = Cache::get($ip_trial_key, 0);
 
         if ($ip_trial > 10) {
-            return $this->error('login_attempts');
+            return $this->error('login_attempts')->respond(422);
         }
 
         try {
@@ -43,7 +43,7 @@ class AuthController extends Controller
                 return $this->errorTrans('incorrect_username_or_password', ['left' => 5 - $trial])->respond(422);
             }
         } catch (ModelNotFoundException $e) {
-            return $this->error('admin_not_exists');
+            return $this->error('admin_not_exists')->respond(404);
         }
 
         $admin = Auth::guard('admin')->user();
